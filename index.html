@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INNOVA-CANVAS · Cocreación de modelos de negocio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#f1efeb; --panel:#ffffff; --tinta:#141312; --gris:#6e6a63; --gris-claro:#9b968d;
+  --rojo:#dd3125; --linea:#dbd7cf; --linea-fuerte:#141312;
+  --verde:#1d7a4c; --azul:#2b4fa2; --ambar:#b57612;
+  --sombra:0 1px 0 rgba(20,19,18,.06);
+  --micro:10px; --radio:2px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--papel); color:var(--tinta);
+  font-family:'Archivo',Helvetica,Arial,sans-serif; font-size:14px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none;padding:0}
+a{color:var(--rojo)}
+:focus-visible{outline:2px solid var(--rojo); outline-offset:2px}
+::selection{background:var(--rojo);color:#fff}
+
+/* ---------- utilidades tipográficas ---------- */
+.micro{font-size:var(--micro); letter-spacing:.14em; text-transform:uppercase; font-weight:600; color:var(--gris)}
+.micro-rojo{color:var(--rojo)}
+.tit-display{font-family:'Archivo Black',Archivo,sans-serif; letter-spacing:-.03em; line-height:.92; text-transform:uppercase}
+
+/* ---------- pantalla de entrada ---------- */
+#entrada{min-height:100%; display:flex; align-items:center; justify-content:center; padding:32px 20px}
+.hoja{width:min(1080px,100%); background:var(--panel); border:1px solid var(--linea); box-shadow:var(--sombra)}
+.hoja-cab{padding:38px 42px 30px}
+.hoja-cab h1{font-family:'Archivo Black',Archivo,sans-serif; text-transform:uppercase; letter-spacing:-.035em; font-size:clamp(40px,7.4vw,76px); line-height:.9; margin:.12em 0 .38em}
+.hoja-cab p{max-width:62ch; margin:0; color:var(--gris); font-size:13.5px}
+.hoja-cols{display:grid; grid-template-columns:1fr 1fr; border-top:1px solid var(--linea)}
+.hoja-col{padding:26px 42px 34px}
+.hoja-col+.hoja-col{border-left:1px solid var(--linea); background:#faf9f7}
+.hoja-col h2{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin:0 0 18px}
+.campo{margin-bottom:14px}
+.campo label{display:block; font-size:11px; color:var(--gris); margin-bottom:5px}
+.campo input, .campo textarea, .campo select{
+  width:100%; padding:9px 11px; background:#fff; border:1px solid var(--linea);
+  border-radius:var(--radio); font-size:13.5px;
+}
+.campo input::placeholder{color:#b9b4ab}
+.campo input:focus{border-color:var(--tinta); outline:none}
+.par{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.nota{font-size:11.5px; color:var(--gris); margin-top:12px; max-width:46ch}
+.btn{
+  display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:var(--radio);
+  font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  background:var(--tinta); color:#fff; border:1px solid var(--tinta);
+}
+.btn:hover{background:#000}
+.btn-rojo{background:var(--rojo); border-color:var(--rojo)}
+.btn-rojo:hover{background:#c4271c}
+.btn-linea{background:transparent; color:var(--tinta); border:1px solid var(--linea)}
+.btn-linea:hover{border-color:var(--tinta); background:#fff}
+.btn-txt{color:var(--rojo); font-size:12px; font-weight:600; text-decoration:underline; text-underline-offset:3px; text-transform:none; letter-spacing:0}
+.fila-btn{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:6px}
+
+/* ---------- armazón de la app ---------- */
+#app{display:none; min-height:100%; flex-direction:column}
+#app.on{display:flex}
+.tope{
+  display:flex; align-items:center; gap:18px; padding:10px 18px; background:var(--panel);
+  border-bottom:1px solid var(--linea); position:sticky; top:0; z-index:40;
+}
+.marca{font-family:'Archivo Black',Archivo,sans-serif; text-transform:uppercase; letter-spacing:-.02em; font-size:15px}
+.tope .sep{flex:1}
+.chip-sala{display:flex; align-items:center; gap:10px; font-size:var(--micro); letter-spacing:.14em; text-transform:uppercase; color:var(--gris); font-weight:600}
+.estado{display:inline-flex; align-items:center; gap:6px}
+.punto{width:7px;height:7px;border-radius:50%; background:var(--gris-claro)}
+.punto.vivo{background:var(--verde)}
+.punto.error{background:var(--rojo)}
+.presencia{display:flex; align-items:center; gap:6px}
+.avatar{
+  width:24px;height:24px;border-radius:50%; display:grid; place-items:center;
+  font-size:9.5px; font-weight:700; letter-spacing:.02em; color:#fff; border:1.5px solid #fff;
+}
+.avatar.yo{box-shadow:0 0 0 1.5px var(--tinta)}
+
+.barra{
+  display:grid; grid-template-columns:1fr auto auto; gap:24px; align-items:end;
+  padding:14px 18px 12px; background:var(--panel); border-bottom:1px solid var(--linea);
+}
+.modelo-nombre{
+  font-size:19px; font-weight:700; letter-spacing:-.01em; border:none; background:transparent;
+  border-bottom:1px solid var(--linea); padding:2px 0 4px; width:min(420px,100%);
+}
+.modelo-nombre:focus{outline:none; border-bottom-color:var(--tinta)}
+.conteo{margin-top:7px; display:flex; gap:16px}
+.grupo-tabs{display:flex; gap:4px}
+.tab{
+  padding:6px 12px; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  border:1px solid var(--linea); background:#fff; border-radius:var(--radio); color:var(--gris);
+}
+.tab:hover{color:var(--tinta); border-color:var(--tinta)}
+.tab.on{background:var(--tinta); border-color:var(--tinta); color:#fff}
+.tab.on.paso-visualizar{background:var(--rojo); border-color:var(--rojo)}
+.tab.on.paso-evaluar{background:var(--tinta); border-color:var(--tinta)}
+.tab.on.paso-innovar{background:var(--azul); border-color:var(--azul)}
+
+.instruccion{
+  display:flex; gap:14px; align-items:baseline; padding:10px 18px;
+  background:#faf9f7; border-bottom:1px solid var(--linea); font-size:12px; color:var(--gris);
+}
+.instruccion b{color:var(--rojo); font-size:var(--micro); letter-spacing:.14em; text-transform:uppercase; white-space:nowrap}
+
+.cuerpo{display:grid; grid-template-columns:minmax(0,1fr) 360px; flex:1; min-height:0}
+.tablero-zona{padding:16px 18px 40px; overflow:auto; position:relative}
+.lateral{border-left:1px solid var(--linea); background:var(--panel); display:flex; flex-direction:column; min-height:0}
+
+/* ---------- tablero de nueve bloques ---------- */
+#tablero{position:relative}
+.grilla{
+  display:grid; gap:0; grid-template-columns:repeat(5,minmax(0,1fr));
+  grid-template-rows:minmax(150px,auto) minmax(150px,auto) minmax(96px,auto);
+  border:1px solid var(--linea-fuerte); background:var(--panel);
+}
+.blk{border-right:1px solid var(--linea); border-bottom:1px solid var(--linea); padding:10px 11px 12px; display:flex; flex-direction:column; min-width:0}
+.blk:hover{background:#fcfbfa}
+.blk[data-b="aliados"]{grid-column:1; grid-row:1/3}
+.blk[data-b="actividades"]{grid-column:2; grid-row:1}
+.blk[data-b="recursos"]{grid-column:2; grid-row:2}
+.blk[data-b="propuesta"]{grid-column:3; grid-row:1/3}
+.blk[data-b="relaciones"]{grid-column:4; grid-row:1}
+.blk[data-b="canales"]{grid-column:4; grid-row:2}
+.blk[data-b="segmentos"]{grid-column:5; grid-row:1/3; border-right:none}
+.blk[data-b="costos"]{grid-column:1/3; grid-row:3; border-bottom:none}
+.blk[data-b="ingresos"]{grid-column:3/6; grid-row:3; border-right:none; border-bottom:none}
+.blk-cab{display:flex; align-items:flex-start; justify-content:space-between; gap:8px}
+.blk-cab h3{font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:700; margin:0; line-height:1.3}
+.blk-hint{font-size:10.5px; color:var(--gris-claro); margin:3px 0 8px; line-height:1.35}
+.mas{color:var(--rojo); font-size:16px; line-height:1; padding:0 2px; font-weight:600}
+.mas:hover{transform:scale(1.15)}
+.items{display:flex; flex-direction:column; gap:5px; flex:1}
+
+.el{
+  position:relative; display:flex; align-items:flex-start; gap:6px; padding:6px 8px;
+  background:#f7f6f3; border:1px solid var(--linea); border-left:3px solid var(--c,#141312);
+  border-radius:var(--radio); font-size:12px; text-align:left; width:100%; line-height:1.3;
+}
+.el:hover{background:#fff; border-color:var(--tinta)}
+.el.sel{background:#fff; border-color:var(--tinta); box-shadow:0 0 0 2px rgba(221,49,37,.25)}
+.el.rel-activa{border-color:var(--rojo)}
+.el .tt{flex:1; min-width:0; overflow-wrap:anywhere}
+.el .marcas{display:flex; gap:5px; align-items:center; font-size:9.5px; color:var(--gris-claro); font-weight:600}
+.el.base{background:transparent; border-style:dashed; color:var(--gris); font-size:11.5px}
+.el.nota-fortaleza{border-left-color:var(--verde)}
+.el.nota-debilidad{border-left-color:var(--rojo)}
+.el.nota-idea{border-left-color:var(--azul)}
+.el.nota-pregunta{border-left-color:var(--ambar)}
+.el .tipo{font-size:9px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; opacity:.75}
+.vacio{font-size:11px; color:#c0bbb2; padding:4px 2px}
+.capa-base{margin-bottom:7px; padding-bottom:7px; border-bottom:1px dotted var(--linea)}
+
+#lineas{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5}
+#lineas line{stroke:var(--tinta); stroke-width:1.1; opacity:0}
+#lineas line.ver{opacity:.55}
+#lineas line.resalta{stroke:var(--rojo); stroke-width:1.8; opacity:1}
+#lineas circle{fill:var(--rojo); opacity:0}
+#lineas circle.ver{opacity:.7}
+
+.modo-relacion #tablero{cursor:crosshair}
+.aviso-relacion{
+  position:sticky; top:0; z-index:20; display:none; gap:12px; align-items:center;
+  background:var(--rojo); color:#fff; padding:8px 14px; font-size:12px; margin-bottom:10px;
+}
+.modo-relacion .aviso-relacion{display:flex}
+.aviso-relacion button{color:#fff; text-decoration:underline; font-size:11.5px}
+
+/* ---------- panel lateral ---------- */
+.lat-tabs{display:flex; border-bottom:1px solid var(--linea)}
+.lat-tabs button{
+  flex:1; padding:10px 4px; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  font-weight:700; color:var(--gris); border-bottom:2px solid transparent;
+}
+.lat-tabs button.on{color:var(--tinta); border-bottom-color:var(--rojo)}
+.lat-cuerpo{flex:1; overflow:auto; padding:16px 16px 28px}
+.lat-cuerpo h4{font-size:10px; letter-spacing:.14em; text-transform:uppercase; margin:0 0 8px; font-weight:700}
+.lat-cuerpo h5{font-size:10px; letter-spacing:.12em; text-transform:uppercase; margin:18px 0 6px; font-weight:700; color:var(--rojo)}
+.guia-q{list-style:none; margin:0 0 6px; padding:0}
+.guia-q li{display:flex; gap:8px; font-size:12px; color:var(--gris); padding:4px 0; line-height:1.4}
+.guia-q li::before{content:"—"; color:var(--rojo); flex:none}
+.guia-paso{background:#faf9f7; border:1px solid var(--linea); padding:10px 12px; margin-bottom:14px; font-size:12px; color:var(--gris)}
+.guia-paso b{display:block; color:var(--tinta); font-size:10px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:4px}
+
+.msg{padding:9px 0; border-bottom:1px solid var(--linea)}
+.msg-cab{display:flex; align-items:center; gap:7px; margin-bottom:3px}
+.msg-cab .quien{font-size:11px; font-weight:700}
+.msg-cab .cuando{font-size:10px; color:var(--gris-claro); margin-left:auto}
+.msg-txt{font-size:12.5px; white-space:pre-wrap; overflow-wrap:anywhere}
+.msg-tag{font-size:9px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:var(--rojo)}
+.compositor{border-top:1px solid var(--linea); padding:10px 16px 14px; background:var(--panel)}
+.compositor textarea{width:100%; min-height:58px; resize:vertical; padding:8px 10px; border:1px solid var(--linea); border-radius:var(--radio); font-size:12.5px}
+.compositor .fila-btn{margin-top:8px; justify-content:space-between}
+.compositor select{padding:6px 8px; border:1px solid var(--linea); border-radius:var(--radio); font-size:11.5px; max-width:150px}
+
+.detalle-campo{margin-bottom:12px}
+.detalle-campo label{display:block; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gris); margin-bottom:4px; font-weight:600}
+.detalle-campo input,.detalle-campo textarea,.detalle-campo select{width:100%; padding:7px 9px; border:1px solid var(--linea); border-radius:var(--radio); font-size:12.5px; background:#fff}
+.detalle-campo textarea{min-height:74px; resize:vertical}
+.lista-rel{list-style:none; padding:0; margin:0}
+.lista-rel li{border:1px solid var(--linea); padding:7px 9px; margin-bottom:6px; font-size:11.5px}
+.lista-rel .flecha{font-weight:700; font-size:11px}
+.lista-rel .arg{color:var(--gris); margin-top:3px; overflow-wrap:anywhere}
+.adjunto{display:flex; align-items:center; gap:8px; border:1px solid var(--linea); padding:6px 8px; margin-bottom:5px; font-size:11.5px}
+.adjunto .nom{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.adjunto a{font-weight:600}
+.quitar{color:var(--gris-claro); font-size:14px; line-height:1}
+.quitar:hover{color:var(--rojo)}
+.dato{display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px dotted var(--linea); font-size:12px}
+.dato span:first-child{color:var(--gris)}
+.dato b{font-weight:600}
+
+/* ---------- modales ---------- */
+.velo{position:fixed; inset:0; background:rgba(20,19,18,.55); display:none; align-items:center; justify-content:center; padding:24px; z-index:80}
+.velo.on{display:flex}
+.modal{background:var(--panel); width:min(680px,100%); max-height:86vh; overflow:auto; border:1px solid var(--linea-fuerte)}
+.modal-cab{display:flex; align-items:baseline; justify-content:space-between; padding:20px 24px 12px; border-bottom:1px solid var(--linea)}
+.modal-cab h3{margin:0; font-size:20px; letter-spacing:-.01em}
+.modal-cuerpo{padding:20px 24px 24px}
+.modal pre{background:#141312; color:#f4f2ee; padding:14px; font-size:11px; line-height:1.55; overflow:auto; max-height:340px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.check{display:flex; gap:9px; align-items:flex-start; padding:6px 0; font-size:12.5px; border-bottom:1px dotted var(--linea)}
+.check .marca{font-weight:700}
+.ok{color:var(--verde)} .falta{color:var(--rojo)}
+
+.toast{
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(12px);
+  background:var(--tinta); color:#fff; padding:10px 18px; font-size:12.5px; z-index:90;
+  opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+}
+.toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+@media (max-width:1080px){
+  .cuerpo{grid-template-columns:1fr}
+  .lateral{border-left:none; border-top:1px solid var(--linea); max-height:60vh}
+  .barra{grid-template-columns:1fr; gap:12px}
+  .grilla{grid-template-columns:1fr; grid-template-rows:none}
+  .blk{grid-column:1!important; grid-row:auto!important; border-right:none!important}
+  .hoja-cols{grid-template-columns:1fr}
+  .hoja-col+.hoja-col{border-left:none; border-top:1px solid var(--linea)}
+  .hoja-cab,.hoja-col{padding-left:24px; padding-right:24px}
+  #lineas{display:none}
+}
+@media print{
+  .tope,.barra,.lateral,.instruccion,.velo,.toast{display:none!important}
+  body{background:#fff}
+  .tablero-zona{overflow:visible}
+}
+</style>
+</head>
+<body>
+
+<!-- ====================== PANTALLA DE ENTRADA ====================== -->
+<main id="entrada">
+  <div class="hoja">
+    <div class="hoja-cab">
+      <p class="micro micro-rojo" style="margin:0">Cocreación de modelos de negocio</p>
+      <h1>Innova-Canvas</h1>
+      <p>Tablero de los nueve bloques de la ontología de Osterwalder para trabajo simultáneo de un equipo real:
+         aportes sobre el tablero, chat, blog por bloque, relaciones argumentadas entre elementos y archivos de apoyo.
+         Complementa el ejercicio presencial alrededor del tablero, en la línea del aplicativo SIMON.</p>
+    </div>
+    <div class="hoja-cols">
+      <div class="hoja-col">
+        <h2>1. Entra a la sala del equipo</h2>
+        <div class="campo">
+          <label for="f-nombre">Tu nombre real</label>
+          <input id="f-nombre" placeholder="Carla Pérez" autocomplete="name">
+        </div>
+        <div class="campo">
+          <label for="f-rol">Tu rol en el ejercicio</label>
+          <input id="f-rol" placeholder="Mercadeo, I+D, finanzas, operaciones…">
+        </div>
+        <div class="par">
+          <div class="campo">
+            <label for="f-sala">Código de la sala</label>
+            <input id="f-sala" placeholder="EQUIPO-01">
+          </div>
+          <div class="campo">
+            <label for="f-equipo">Equipo</label>
+            <input id="f-equipo" placeholder="Ej. Equipo 3">
+          </div>
+        </div>
+        <div class="campo">
+          <label for="f-modelo">Modelo de negocio que van a diseñar</label>
+          <input id="f-modelo" placeholder="Ej. Hospitalización domiciliaria">
+        </div>
+        <div class="fila-btn">
+          <button class="btn btn-rojo" id="btn-entrar">Entrar al tablero</button>
+        </div>
+        <p class="nota">Todos los que entren con el mismo código de sala trabajan sobre el mismo tablero.
+           Comparte el enlace o el código de sala a tus compañeros.</p>
+      </div>
+      <div class="hoja-col">
+        <h2>2. Sincronización real (Supabase)</h2>
+        <p class="nota" style="margin:0 0 16px">
+          Pega los datos de tu proyecto de Supabase para que varios participantes trabajen a la vez desde distintos
+          computadores. Sin ellos, la sala funciona en el mismo navegador (varias pestañas) y guarda localmente.</p>
+        <div class="campo">
+          <label for="f-url">Project URL</label>
+          <input id="f-url" placeholder="https://xxxxxxx.supabase.co" spellcheck="false">
+        </div>
+        <div class="campo">
+          <label for="f-key">Anon public key</label>
+          <input id="f-key" placeholder="eyJhbGciOi..." spellcheck="false">
+        </div>
+        <div class="fila-btn">
+          <button class="btn btn-linea" id="btn-cred">Guardar credenciales</button>
+          <button class="btn-txt" id="btn-sql-1">Ver SQL de la tabla</button>
+        </div>
+        <p class="nota" id="estado-cred">Sin conexión en vivo: la sala trabaja en este navegador y guarda localmente.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ====================== APLICACIÓN ====================== -->
+<div id="app">
+  <header class="tope">
+    <span class="marca">Innova-Canvas</span>
+    <div class="chip-sala">
+      <span>Sala <b id="t-sala" style="color:var(--tinta)">—</b></span>
+      <span class="estado"><i class="punto" id="t-punto"></i><span id="t-estado">Local</span></span>
+    </div>
+    <span class="sep"></span>
+    <div class="chip-sala"><span>En la sala</span><div class="presencia" id="t-presencia"></div></div>
+    <button class="btn btn-rojo" id="btn-guardar">Guardar y compartir</button>
+  </header>
+
+  <div class="barra">
+    <div>
+      <p class="micro" style="margin:0 0 4px">Modelo de negocio</p>
+      <input class="modelo-nombre" id="t-modelo" placeholder="Modelo de negocio sin título">
+      <div class="conteo">
+        <span class="micro"><b id="t-n-el" style="color:var(--tinta)">0</b> elementos</span>
+        <span class="micro"><b id="t-n-rel" style="color:var(--tinta)">0</b> relaciones</span>
+        <span class="micro"><b id="t-n-notas" style="color:var(--tinta)">0</b> aportes</span>
+      </div>
+    </div>
+    <div>
+      <p class="micro" style="margin:0 0 6px">Paso</p>
+      <div class="grupo-tabs" id="tabs-paso">
+        <button class="tab paso-visualizar on" data-paso="visualizar">Visualizar</button>
+        <button class="tab paso-evaluar" data-paso="evaluar">Evaluar</button>
+        <button class="tab paso-innovar" data-paso="innovar">Innovar</button>
+      </div>
+    </div>
+    <div>
+      <p class="micro" style="margin:0 0 6px">Relaciones</p>
+      <div class="grupo-tabs" id="tabs-rel">
+        <button class="tab" data-rel="ocultas">Ocultas</button>
+        <button class="tab on" data-rel="hover">Al pasar el puntero</button>
+        <button class="tab" data-rel="todas">Todas</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="instruccion"><b id="i-paso">Paso: visualizar</b><span id="i-texto"></span></p>
+
+  <div class="cuerpo">
+    <div class="tablero-zona">
+      <div class="aviso-relacion">
+        <span id="aviso-txt">Elige el segundo elemento para crear la relación.</span>
+        <button id="cancelar-rel">Cancelar</button>
+      </div>
+      <div id="tablero">
+        <div class="grilla" id="grilla"></div>
+        <svg id="lineas" aria-hidden="true"></svg>
+      </div>
+    </div>
+
+    <aside class="lateral">
+      <nav class="lat-tabs" id="lat-tabs">
+        <button data-p="detalle" class="on">Detalle</button>
+        <button data-p="chat">Chat</button>
+        <button data-p="blog">Blog</button>
+        <button data-p="guia">Guía</button>
+        <button data-p="datos">Datos</button>
+      </nav>
+      <div class="lat-cuerpo" id="lat-cuerpo"></div>
+      <div class="compositor" id="compositor" style="display:none">
+        <select id="c-bloque"></select>
+        <textarea id="c-texto" placeholder="Escribe tu aporte…"></textarea>
+        <div class="fila-btn">
+          <span class="micro" id="c-ayuda"></span>
+          <button class="btn" id="c-enviar">Publicar</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ====================== MODALES ====================== -->
+<div class="velo" id="velo">
+  <div class="modal">
+    <div class="modal-cab"><h3 id="m-titulo">—</h3><button class="btn-txt" id="m-cerrar">Cerrar</button></div>
+    <div class="modal-cuerpo" id="m-cuerpo"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   INNOVA-CANVAS — cocreación de modelos de negocio sobre los nueve
+   bloques de la ontología de Osterwalder.
+   ===================================================================== */
+
+/* ---------- 1. Configuración de contenido ---------- */
+const BLOQUES = [
+  {id:'aliados',      n:'Red de aliados',                        h:'Aliados y proveedores en que se apalanca la oferta'},
+  {id:'actividades',  n:'Actividades clave',                      h:'Lo que se hace con los recursos para producir la oferta'},
+  {id:'recursos',     n:'Recursos clave',                         h:'Físicos, intelectuales, humanos y financieros'},
+  {id:'propuesta',    n:'Propuesta de valor',                     h:'El paquete de productos y servicios y sus atributos'},
+  {id:'relaciones',   n:'Relaciones con clientes',                h:'Tipo de relación por segmento y etapa del ciclo'},
+  {id:'canales',      n:'Canales de distribución y comunicación', h:'Cómo se accede a los clientes y se les comunica la oferta'},
+  {id:'segmentos',    n:'Segmentos de clientes',                  h:'Tipos de cliente a los que se dirige la oferta'},
+  {id:'costos',       n:'Estructura de costos',                   h:'Los costos más significativos del modelo'},
+  {id:'ingresos',     n:'Fuentes de ingresos',                    h:'Transacciones, suscripciones, licenciamiento, pauta…'}
+];
+const NOMBRE_BLOQUE = Object.fromEntries(BLOQUES.map(b=>[b.id,b.n]));
+
+const PASOS = {
+  visualizar:{
+    rotulo:'Paso: visualizar',
+    texto:'Describan el modelo llenando cada bloque: cada elemento se codifica con una palabra o frase corta y se amplía en su descripción. Registren también las relaciones entre elementos.',
+    objetivo:'Lograr un entendimiento común del modelo completo, con la lógica de los nueve bloques y las relaciones entre sus elementos.',
+    tipos:[['elemento','Elemento del modelo']],
+    verbo:'Añadir elemento'
+  },
+  evaluar:{
+    rotulo:'Paso: evaluar',
+    texto:'Cuestionen el modelo: registren fortalezas y debilidades de cada bloque o de un elemento concreto, con criterios objetivos y la información que las respalda.',
+    objetivo:'Calificar el modelo con criterios objetivos: qué sostiene la oferta hoy y qué la pone en riesgo.',
+    tipos:[['fortaleza','Fortaleza'],['debilidad','Debilidad']],
+    verbo:'Añadir fortaleza o debilidad'
+  },
+  innovar:{
+    rotulo:'Paso: innovar',
+    texto:'Rompan el statu quo: ideas de mejora, prototipos alternativos y preguntas abiertas. No filtren por las capacidades actuales; primero lo deseable, después los retos para lograrlo.',
+    objetivo:'Generar prototipos de modelo de negocio: varias alternativas rápidas para elegir después la más valiosa.',
+    tipos:[['idea','Idea o prototipo'],['pregunta','Reto por resolver']],
+    verbo:'Añadir idea o reto'
+  }
+};
+
+const GUIA = {
+  visualizar:{
+    aliados:['¿Quiénes son los aliados y proveedores estratégicos del modelo?','¿Cuáles actividades convendría apalancar en un tercero para acelerar el ciclo de innovación?'],
+    actividades:['¿Cuáles son las actividades y procesos clave que producen la oferta?','¿Cuáles son las competencias esenciales que no se pueden delegar?'],
+    recursos:['¿Cuáles recursos físicos, intelectuales, humanos y financieros hacen funcionar el negocio?','¿Son propios, arrendados o adquiridos de los aliados clave?'],
+    propuesta:['¿Qué paquete de productos y servicios se ofrece y cuáles son sus atributos principales?','¿Por qué está dispuesto a pagar el cliente?','¿En qué se diferencia de la oferta de otros proveedores?'],
+    relaciones:['¿Qué tipo de relación se establece con cada segmento: personalizada, masiva o automatizada?','¿Qué pasa en preventa, venta, postventa y migración a nuevas ofertas?'],
+    canales:['¿Cómo se llega a los clientes y cómo se les conquista?','¿A través de cuáles canales se interactúa con ellos?'],
+    segmentos:['¿Quiénes son los clientes?','¿En qué difieren los segmentos: necesidades, forma de acceso, tipo de relación, rentabilidad?'],
+    costos:['¿Cuáles son los costos más importantes en la ejecución del modelo?','¿Qué recursos, actividades y aliados los originan?'],
+    ingresos:['¿Cómo gana dinero el negocio?','¿Qué tipo de ingresos recibe: transacciones, suscripciones, servicios, licenciamiento, alquiler, pauta?']
+  },
+  evaluar:{
+    aliados:['¿Se trabaja con aliados en un grado suficiente?','¿Qué tan bien se trabaja con socios y proveedores?','¿Qué tanto se depende de ellos?'],
+    actividades:['¿Qué tan eficientes somos en la ejecución de las actividades?','¿Se hacen demasiadas actividades dentro de la organización, con la consiguiente falta de foco?'],
+    recursos:['¿Se dispone de los recursos adecuados en calidad y cantidad?','¿Hay demasiados recursos internos, lo que conduce a falta de enfoque?'],
+    propuesta:['¿La propuesta de valor todavía satisface bien las necesidades de los clientes?','¿Sabemos cómo la perciben?','¿Los competidores ofrecen propuestas similares a precios similares o mejores?'],
+    relaciones:['¿Hay una estrategia de relacionamiento con los clientes?','¿Qué tan buenas son las relaciones con los mejores clientes?','¿Se gasta demasiado tiempo y dinero en clientes no rentables?'],
+    canales:['¿Qué tan bien se llega a los clientes y qué tan buenos son los canales para adquirirlos?','¿Qué tan integrados y eficientes en costos están?','¿Se usan los canales correctos para los clientes correctos?'],
+    segmentos:['¿Se conocen suficientemente bien los clientes y sus necesidades?','¿Es probable que algún grupo nos abandone pronto?','¿Podemos reagrupar mejor los segmentos?'],
+    costos:['¿La estructura de costos es adecuada y eficiente?','¿Se entiende con claridad qué parte del negocio involucra los mayores costos?'],
+    ingresos:['¿Qué tan estables y diversificadas son las fuentes de ingresos?','¿Se depende de muy pocas fuentes?','¿Qué tan bien se manejan los precios de la propuesta de valor?']
+  },
+  innovar:{
+    aliados:['¿Cuáles aliados pueden ayudar a complementar la oferta de valor?','¿Cuáles proveedores pueden ayudar a optimizar el modelo?'],
+    actividades:['¿Hay actividades que convenga dar en encargo a los aliados?','¿Las actividades se adaptan perfectamente a la propuesta de valor?','¿Cómo se pueden optimizar?'],
+    recursos:['¿Hay recursos de los que se pueda prescindir o que se puedan sustituir?','¿Algunos recursos clave pueden ser provistos más eficientemente por los aliados?'],
+    propuesta:['¿Es posible ofrecer a los distintos segmentos soluciones más a la medida?','¿Tienen los clientes otras necesidades fáciles de satisfacer con la empresa o con los aliados?','¿A qué atributos podríamos renunciar para ganar ampliamente en otros? (mapa de valor)'],
+    relaciones:['¿Qué nivel de personalización requiere cada relación: dedicada o autoservicio?','¿Qué relaciones se pueden automatizar sin perder valor?'],
+    canales:['¿Se puede ampliar la base de clientes usando mejor los canales?','¿Se pueden integrar mejor los canales o introducir nuevos con aliados?'],
+    segmentos:['¿Existen nuevos segmentos que sea posible atender?','¿Se pueden reagrupar los segmentos de acuerdo con sus necesidades?'],
+    costos:['¿Existe alguna forma de reducir la estructura de costos?','¿Qué costos desaparecen si cambia el modelo?'],
+    ingresos:['¿Se pueden introducir nuevos flujos de ingresos; por ejemplo, alquilar en vez de vender?','¿Se pueden hacer más ventas cruzadas con productos propios o de los aliados?']
+  }
+};
+
+const PALETA = ['#dd3125','#2b4fa2','#1d7a4c','#b57612','#7a2b8c','#0f7f8c','#c2185b','#4a4a4a'];
+
+/* ---------- 2. Utilidades ---------- */
+const $  = (s,c)=> (c||document).querySelector(s);
+const $$ = (s,c)=> Array.from((c||document).querySelectorAll(s));
+const esc = t => String(t==null?'':t).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const uid = () => (crypto.randomUUID? crypto.randomUUID() : 'id-'+Date.now().toString(36)+Math.random().toString(36).slice(2,9));
+const ahora = () => new Date().toISOString();
+const iniciales = n => (n||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]).join('').toUpperCase();
+function colorDe(nombre){ let h=0; for(const c of (nombre||'')) h=(h*31+c.charCodeAt(0))>>>0; return PALETA[h%PALETA.length]; }
+function hora(iso){ try{ return new Date(iso).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function fecha(iso){ try{ return new Date(iso).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+let tToast;
+function toast(txt){ const t=$('#toast'); t.textContent=txt; t.classList.add('on'); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove('on'),2600); }
+
+/* Almacenamiento local tolerante a entornos restringidos */
+const Local = (()=>{
+  const mem = new Map();
+  const tieneLS = (()=>{ try{ localStorage.setItem('__ic','1'); localStorage.removeItem('__ic'); return true; }catch(e){ return false; } })();
+  return {
+    get(k){ try{ if(tieneLS){ const v=localStorage.getItem(k); return v?JSON.parse(v):null; } }catch(e){}
+            return mem.has(k)? JSON.parse(mem.get(k)) : null; },
+    set(k,v){ const s=JSON.stringify(v); mem.set(k,s); try{ if(tieneLS) localStorage.setItem(k,s); }catch(e){} }
+  };
+})();
+
+/* ---------- 3. Estado ---------- */
+const S = {
+  sala:'', equipo:'', modelo:'', entregado:false, entregadoEn:null,
+  yo:{id:uid(), nombre:'', rol:'', color:'#dd3125'},
+  paso:'visualizar', panel:'detalle', modoRel:'hover',
+  elementos:new Map(), relaciones:new Map(), mensajes:new Map(),
+  presentes:new Map(),
+  seleccion:null, enlazando:null, detalleRender:null,
+  sb:null, canal:null, online:false, cred:{url:'',key:''}
+};
+const claveSala = () => 'innova-canvas:sala:'+S.sala;
+
+/* ---------- 4. Sincronización ---------- */
+const SQL = `-- INNOVA-CANVAS · esquema mínimo para la sincronización en vivo
+-- Ejecuta este script en Supabase → SQL Editor → Run.
+
+create table if not exists ic_salas (
+  codigo        text primary key,
+  equipo        text,
+  modelo        text,
+  entregado     boolean default false,
+  entregado_en  timestamptz,
+  entregado_por text,
+  nota_profesor text,
+  actualizado   timestamptz default now()
+);
+
+create table if not exists ic_elementos (
+  id          text primary key,
+  sala        text not null,
+  paso        text not null default 'visualizar',
+  bloque      text not null,
+  tipo        text not null default 'elemento',
+  titulo      text not null,
+  descripcion text default '',
+  ref         text,
+  adjuntos    jsonb default '[]'::jsonb,
+  autor       text, rol text, color text,
+  borrado     boolean default false,
+  creado      timestamptz default now(),
+  actualizado timestamptz default now()
+);
+
+create table if not exists ic_relaciones (
+  id          text primary key,
+  sala        text not null,
+  origen      text not null,
+  destino     text not null,
+  argumento   text default '',
+  autor       text, color text,
+  borrado     boolean default false,
+  creado      timestamptz default now()
+);
+
+create table if not exists ic_mensajes (
+  id      text primary key,
+  sala    text not null,
+  tipo    text not null default 'chat',   -- 'chat' | 'blog'
+  bloque  text,
+  paso    text,
+  texto   text not null,
+  autor   text, rol text, color text,
+  creado  timestamptz default now()
+);
+
+create index if not exists ic_elementos_sala_idx  on ic_elementos(sala);
+create index if not exists ic_relaciones_sala_idx on ic_relaciones(sala);
+create index if not exists ic_mensajes_sala_idx   on ic_mensajes(sala);
+
+-- Acceso para la llave anónima (ejercicio de clase: sala protegida por su código)
+alter table ic_salas      enable row level security;
+alter table ic_elementos  enable row level security;
+alter table ic_relaciones enable row level security;
+alter table ic_mensajes   enable row level security;
+
+create policy "acceso sala"        on ic_salas      for all using (true) with check (true);
+create policy "acceso elementos"   on ic_elementos  for all using (true) with check (true);
+create policy "acceso relaciones"  on ic_relaciones for all using (true) with check (true);
+create policy "acceso mensajes"    on ic_mensajes   for all using (true) with check (true);
+
+-- Publicación en tiempo real
+alter publication supabase_realtime add table ic_salas, ic_elementos, ic_relaciones, ic_mensajes;`;
+
+/* Canal entre pestañas del mismo navegador (respaldo sin Supabase) */
+let bc = null;
+function abrirCanalLocal(){
+  try{
+    bc = new BroadcastChannel('innova-canvas:'+S.sala);
+    bc.onmessage = e => {
+      const {t,d,de} = e.data||{};
+      if(de === S.yo.id) return;
+      if(t==='elemento') S.elementos.set(d.id,d);
+      else if(t==='relacion') S.relaciones.set(d.id,d);
+      else if(t==='mensaje') S.mensajes.set(d.id,d);
+      else if(t==='sala'){ S.modelo=d.modelo; S.equipo=d.equipo; S.entregado=d.entregado; $('#t-modelo').value=d.modelo||''; }
+      else if(t==='hola'){ S.presentes.set(d.id,{...d,visto:Date.now()}); emitirLocal('aqui',S.yo); }
+      else if(t==='aqui'){ S.presentes.set(d.id,{...d,visto:Date.now()}); }
+      pintarTodo();
+    };
+  }catch(e){ bc = null; }
+}
+function emitirLocal(t,d){ try{ bc && bc.postMessage({t,d,de:S.yo.id}); }catch(e){} }
+
+async function cargarSupabase(){
+  if(window.supabase && window.supabase.createClient) return true;
+  const fuentes = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js'
+  ];
+  for(const src of fuentes){
+    const ok = await new Promise(res=>{
+      const s=document.createElement('script'); s.src=src;
+      s.onload=()=>res(true); s.onerror=()=>res(false);
+      document.head.appendChild(s);
+    });
+    if(ok && window.supabase) return true;
+  }
+  return false;
+}
+
+function marcarEstado(txt, clase){
+  $('#t-estado').textContent = txt;
+  const p = $('#t-punto'); p.className = 'punto'+(clase?' '+clase:'');
+}
+
+async function conectar(){
+  const {url,key} = S.cred;
+  if(!url || !key){ marcarEstado('Local',''); return false; }
+  marcarEstado('Conectando…','');
+  const listo = await cargarSupabase();
+  if(!listo){ marcarEstado('Sin librería','error'); toast('No se pudo cargar la librería de Supabase. La sala sigue trabajando localmente.'); return false; }
+  try{
+    S.sb = window.supabase.createClient(url,key,{realtime:{params:{eventsPerSecond:8}}});
+    await S.sb.from('ic_salas').upsert({codigo:S.sala, equipo:S.equipo, modelo:S.modelo, actualizado:ahora()});
+    await traerTodo();
+    suscribir();
+    S.online = true; marcarEstado('En vivo','vivo');
+    return true;
+  }catch(e){
+    console.warn(e); S.online=false; marcarEstado('Error de conexión','error');
+    toast('No fue posible conectar. Revisa la URL, la llave y que hayas corrido el SQL.');
+    return false;
+  }
+}
+
+async function traerTodo(){
+  if(!S.sb) return;
+  const [el,rel,msg,sala] = await Promise.all([
+    S.sb.from('ic_elementos').select('*').eq('sala',S.sala),
+    S.sb.from('ic_relaciones').select('*').eq('sala',S.sala),
+    S.sb.from('ic_mensajes').select('*').eq('sala',S.sala).order('creado',{ascending:true}),
+    S.sb.from('ic_salas').select('*').eq('codigo',S.sala).maybeSingle()
+  ]);
+  if(el.error||rel.error||msg.error) throw (el.error||rel.error||msg.error);
+  (el.data||[]).forEach(r=>S.elementos.set(r.id,r));
+  (rel.data||[]).forEach(r=>S.relaciones.set(r.id,r));
+  (msg.data||[]).forEach(r=>S.mensajes.set(r.id,r));
+  if(sala && sala.data){
+    if(sala.data.modelo && !S.modelo){ S.modelo = sala.data.modelo; $('#t-modelo').value = S.modelo; }
+    S.entregado = !!sala.data.entregado; S.entregadoEn = sala.data.entregado_en;
+  }
+  guardarLocal(); pintarTodo();
+}
+
+function suscribir(){
+  const filtro = 'sala=eq.'+S.sala;
+  S.canal = S.sb.channel('innova:'+S.sala, {config:{presence:{key:S.yo.id}}})
+    .on('postgres_changes',{event:'*',schema:'public',table:'ic_elementos',filter:filtro},  p=>{ if(p.new&&p.new.id){S.elementos.set(p.new.id,p.new); guardarLocal(); pintarTodo();} })
+    .on('postgres_changes',{event:'*',schema:'public',table:'ic_relaciones',filter:filtro}, p=>{ if(p.new&&p.new.id){S.relaciones.set(p.new.id,p.new); guardarLocal(); pintarTodo();} })
+    .on('postgres_changes',{event:'*',schema:'public',table:'ic_mensajes',filter:filtro},   p=>{ if(p.new&&p.new.id){S.mensajes.set(p.new.id,p.new); guardarLocal(); pintarTodo();} })
+    .on('postgres_changes',{event:'*',schema:'public',table:'ic_salas',filter:'codigo=eq.'+S.sala}, p=>{
+        if(!p.new) return;
+        S.entregado = !!p.new.entregado; S.entregadoEn = p.new.entregado_en;
+        if(p.new.modelo && p.new.modelo!==S.modelo && document.activeElement!==$('#t-modelo')){ S.modelo=p.new.modelo; $('#t-modelo').value=S.modelo; }
+        pintarTodo();
+    })
+    .on('presence',{event:'sync'},()=>{
+        const st = S.canal.presenceState(); S.presentes.clear();
+        Object.values(st).forEach(arr=>arr.forEach(p=>S.presentes.set(p.id,p)));
+        pintarPresencia();
+    })
+    .subscribe(async estado=>{
+      if(estado==='SUBSCRIBED'){ await S.canal.track(S.yo); marcarEstado('En vivo','vivo'); }
+      else if(estado==='CHANNEL_ERROR'||estado==='TIMED_OUT'){ marcarEstado('Reconectando…','error'); }
+    });
+  setInterval(()=>{ if(S.online) traerTodo().catch(()=>{}); }, 20000);
+}
+
+/* Escritura: siempre local + emisión; y remota si hay conexión */
+function guardarLocal(){
+  Local.set(claveSala(), {
+    sala:S.sala, equipo:S.equipo, modelo:S.modelo, entregado:S.entregado, entregadoEn:S.entregadoEn,
+    elementos:[...S.elementos.values()], relaciones:[...S.relaciones.values()], mensajes:[...S.mensajes.values()]
+  });
+}
+function cargarLocal(){
+  const d = Local.get(claveSala()); if(!d) return;
+  S.modelo = S.modelo || d.modelo || ''; S.equipo = S.equipo || d.equipo || '';
+  S.entregado = !!d.entregado; S.entregadoEn = d.entregadoEn;
+  (d.elementos||[]).forEach(r=>S.elementos.set(r.id,r));
+  (d.relaciones||[]).forEach(r=>S.relaciones.set(r.id,r));
+  (d.mensajes||[]).forEach(r=>S.mensajes.set(r.id,r));
+}
+
+async function subir(tabla, fila){
+  guardarLocal();
+  if(!S.sb || !S.online) return;
+  try{ const {error} = await S.sb.from(tabla).upsert(fila); if(error) throw error; }
+  catch(e){ console.warn(e); toast('El cambio quedó guardado localmente; no se pudo enviar al servidor.'); }
+}
+function guardarElemento(el){ el.actualizado=ahora(); S.elementos.set(el.id,el); emitirLocal('elemento',el); subir('ic_elementos',el); pintarTodo(); }
+function guardarRelacion(r){ S.relaciones.set(r.id,r); emitirLocal('relacion',r); subir('ic_relaciones',r); pintarTodo(); }
+function guardarMensaje(m){ S.mensajes.set(m.id,m); emitirLocal('mensaje',m); subir('ic_mensajes',m); pintarTodo(); }
+function guardarSala(extra){
+  const fila = Object.assign({codigo:S.sala, equipo:S.equipo, modelo:S.modelo, actualizado:ahora()}, extra||{});
+  emitirLocal('sala',{modelo:S.modelo,equipo:S.equipo,entregado:S.entregado});
+  guardarLocal();
+  if(S.sb && S.online) S.sb.from('ic_salas').upsert(fila).then(({error})=>{ if(error) console.warn(error); });
+}
+
+/* ---------- 5. Tablero ---------- */
+function construirGrilla(){
+  $('#grilla').innerHTML = BLOQUES.map(b=>`
+    <section class="blk" data-b="${b.id}">
+      <div class="blk-cab">
+        <h3>${esc(b.n)}</h3>
+        <button class="mas" data-add="${b.id}" title="Añadir a ${esc(b.n)}" aria-label="Añadir a ${esc(b.n)}">+</button>
+      </div>
+      <p class="blk-hint">${esc(b.h)}</p>
+      <div class="items" data-items="${b.id}"></div>
+    </section>`).join('');
+}
+
+const vivos = () => [...S.elementos.values()].filter(e=>!e.borrado);
+const relVivas = () => [...S.relaciones.values()].filter(r=>!r.borrado);
+const deBloque = (b,paso) => vivos().filter(e=>e.bloque===b && e.paso===paso)
+                                    .sort((a,b2)=> (a.creado||'').localeCompare(b2.creado||''));
+
+function chip(el, clase){
+  const nRel = relVivas().filter(r=>r.origen===el.id||r.destino===el.id).length;
+  const nAdj = (el.adjuntos||[]).length;
+  const marcas = [];
+  if(nRel) marcas.push(`<span title="${nRel} relación(es)">⇄ ${nRel}</span>`);
+  if(nAdj) marcas.push(`<span title="${nAdj} archivo(s)">▣ ${nAdj}</span>`);
+  if((el.descripcion||'').trim()) marcas.push(`<span title="Tiene descripción">≡</span>`);
+  const tipo = (el.paso!=='visualizar') ? `<span class="tipo" style="color:${el.tipo==='fortaleza'?'var(--verde)':el.tipo==='debilidad'?'var(--rojo)':el.tipo==='pregunta'?'var(--ambar)':'var(--azul)'}">${esc(el.tipo)}</span> ` : '';
+  const ref = el.ref && S.elementos.get(el.ref) ? `<span style="color:var(--gris-claro)">↳ ${esc(S.elementos.get(el.ref).titulo)} · </span>` : '';
+  return `<button class="el ${clase||''} nota-${esc(el.tipo)} ${S.seleccion===el.id?'sel':''}"
+            data-el="${el.id}" style="--c:${esc(el.color||'#141312')}">
+            <span class="tt">${tipo}${ref}${esc(el.titulo||'(sin título)')}</span>
+            <span class="marcas">${marcas.join('')}</span>
+          </button>`;
+}
+
+function pintarTablero(){
+  BLOQUES.forEach(b=>{
+    const cont = $(`[data-items="${b.id}"]`); if(!cont) return;
+    let html = '';
+    if(S.paso!=='visualizar'){
+      const base = deBloque(b.id,'visualizar');
+      html += base.length
+        ? `<div class="capa-base">${base.map(e=>chip(e,'base')).join('')}</div>`
+        : `<p class="vacio">Sin elementos descritos en Visualizar.</p>`;
+    }
+    const props = deBloque(b.id,S.paso);
+    html += props.length ? props.map(e=>chip(e)).join('')
+          : `<p class="vacio">${S.paso==='visualizar'?'Vacío. Usa + para añadir.':'Sin aportes en este paso.'}</p>`;
+    cont.innerHTML = html;
+  });
+  $('#t-n-el').textContent   = vivos().filter(e=>e.paso==='visualizar').length;
+  $('#t-n-rel').textContent  = relVivas().length;
+  $('#t-n-notas').textContent= vivos().filter(e=>e.paso!=='visualizar').length + [...S.mensajes.values()].length;
+}
+
+function pintarLineas(){
+  const svg = $('#lineas'), cont = $('#tablero');
+  if(!svg||!cont) return;
+  const caja = cont.getBoundingClientRect();
+  svg.setAttribute('viewBox',`0 0 ${caja.width} ${caja.height}`);
+  svg.style.width = caja.width+'px'; svg.style.height = caja.height+'px';
+  if(S.modoRel==='ocultas'){ svg.innerHTML=''; return; }
+  const ver = S.modoRel==='todas';
+  const piezas = relVivas().map(r=>{
+    const a = $(`[data-el="${r.origen}"]`), b = $(`[data-el="${r.destino}"]`);
+    if(!a||!b) return '';
+    const ca=a.getBoundingClientRect(), cb=b.getBoundingClientRect();
+    const x1=ca.left-caja.left+ca.width/2, y1=ca.top-caja.top+ca.height/2;
+    const x2=cb.left-caja.left+cb.width/2, y2=cb.top-caja.top+cb.height/2;
+    const act = S.seleccion===r.origen||S.seleccion===r.destino;
+    const cls = (act?'ver resalta':(ver?'ver':''));
+    return `<line data-r="${r.id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cls}"><title>${esc(r.argumento||'Relación')}</title></line>
+            <circle data-r="${r.id}" cx="${(x1+x2)/2}" cy="${(y1+y2)/2}" r="${act?3.4:2.4}" class="${cls?'ver':''}"></circle>`;
+  });
+  svg.innerHTML = piezas.join('');
+}
+
+function pintarPresencia(){
+  const yo = {...S.yo};
+  const lista = new Map(S.presentes); lista.set(yo.id,yo);
+  $('#t-presencia').innerHTML = [...lista.values()].slice(0,8).map(p=>
+    `<span class="avatar ${p.id===S.yo.id?'yo':''}" style="background:${esc(p.color||'#666')}" title="${esc(p.nombre||'')}${p.rol?' · '+esc(p.rol):''}">${esc(iniciales(p.nombre))}</span>`
+  ).join('');
+}
+
+function pintarTodo(){
+  pintarTablero(); pintarPanel(); pintarPresencia();
+  requestAnimationFrame(pintarLineas);
+}
+
+/* ---------- 6. Interacción con el tablero ---------- */
+function nuevoElemento(bloque, ref){
+  const cfg = PASOS[S.paso];
+  const el = {
+    id:uid(), sala:S.sala, paso:S.paso, bloque, tipo:cfg.tipos[0][0],
+    titulo:'', descripcion:'', ref:ref||null, adjuntos:[],
+    autor:S.yo.nombre, rol:S.yo.rol, color:S.yo.color,
+    borrado:false, creado:ahora(), actualizado:ahora()
+  };
+  S.elementos.set(el.id, el);
+  S.seleccion = el.id; S.panel='detalle';
+  pintarTodo();
+  setTimeout(()=>{ const i=$('#d-titulo'); if(i){ i.focus(); } },30);
+}
+
+function borrarElemento(id){
+  const el = S.elementos.get(id); if(!el) return;
+  if(!confirm('¿Eliminar «'+(el.titulo||'sin título')+'»? También se quitan sus relaciones.')) return;
+  el.borrado = true; guardarElemento(el);
+  relVivas().filter(r=>r.origen===id||r.destino===id).forEach(r=>{ r.borrado=true; guardarRelacion(r); });
+  if(S.seleccion===id) S.seleccion=null;
+  pintarTodo();
+}
+
+function iniciarEnlace(id){
+  S.enlazando = id;
+  document.body.classList.add('modo-relacion');
+  $('#aviso-txt').textContent = 'Relacionando «'+(S.elementos.get(id)||{}).titulo+'». Elige el segundo elemento en el tablero.';
+}
+function cancelarEnlace(){ S.enlazando=null; document.body.classList.remove('modo-relacion'); }
+
+function crearRelacion(origen, destino){
+  if(origen===destino){ cancelarEnlace(); return; }
+  const arg = prompt('Describe la relación entre estos dos elementos (por qué se relacionan, qué causa qué):','');
+  if(arg===null){ cancelarEnlace(); return; }
+  const r = {id:uid(), sala:S.sala, origen, destino, argumento:arg.trim(), autor:S.yo.nombre, color:S.yo.color, borrado:false, creado:ahora()};
+  guardarRelacion(r); cancelarEnlace();
+  toast('Relación creada.');
+}
+
+document.addEventListener('click', e=>{
+  const add = e.target.closest('[data-add]');
+  if(add){ nuevoElemento(add.dataset.add); return; }
+  const chipEl = e.target.closest('[data-el]');
+  if(chipEl){
+    const id = chipEl.dataset.el;
+    if(S.enlazando){ crearRelacion(S.enlazando,id); return; }
+    S.seleccion = id; S.panel='detalle';
+    $$('#lat-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.p==='detalle'));
+    pintarTodo();
+    return;
+  }
+});
+$('#cancelar-rel').addEventListener('click', cancelarEnlace);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ cancelarEnlace(); } });
+window.addEventListener('resize', ()=>pintarLineas());
+$('.tablero-zona')?.addEventListener('scroll', ()=>pintarLineas());
+
+/* ---------- 7. Panel lateral ---------- */
+function pintarPanel(){
+  const c = $('#lat-cuerpo'); const comp = $('#compositor');
+  comp.style.display = (S.panel==='chat'||S.panel==='blog') ? 'block':'none';
+  $('#c-bloque').style.display = S.panel==='blog' ? 'block':'none';
+  $('#c-ayuda').textContent = S.panel==='blog' ? 'Se publica en el bloque elegido' : 'Visible para toda la sala';
+  if(S.panel==='detalle'){
+    // No reconstruir el formulario mientras alguien escribe en él
+    const escribiendo = c.contains(document.activeElement) && S.detalleRender===S.seleccion;
+    if(!escribiendo){ c.innerHTML = vistaDetalle(); S.detalleRender = S.seleccion; conectarDetalle(); }
+  }
+  else if(S.panel==='chat') c.innerHTML = vistaMensajes('chat');
+  else if(S.panel==='blog') c.innerHTML = vistaMensajes('blog');
+  else if(S.panel==='guia') c.innerHTML = vistaGuia();
+  else c.innerHTML = vistaDatos();
+  if(S.panel!=='detalle') S.detalleRender = null;
+}
+
+function vistaDetalle(){
+  const el = S.seleccion ? S.elementos.get(S.seleccion) : null;
+  if(!el || el.borrado){
+    const cfg = PASOS[S.paso];
+    return `<h4>${esc(cfg.rotulo)}</h4>
+      <p style="font-size:12.5px;color:var(--gris)">${esc(cfg.objetivo)}</p>
+      <div class="guia-paso"><b>Cómo se trabaja</b>${esc(cfg.texto)}</div>
+      <p style="font-size:12.5px;color:var(--gris)">Selecciona un elemento del tablero para ver y editar su detalle, sus archivos y sus relaciones.
+      Usa el <b style="color:var(--rojo)">+</b> de cada bloque para ${esc(cfg.verbo.toLowerCase())}.</p>
+      <h5>Aportes recientes</h5>${listaRecientes()}`;
+  }
+  const cfg = PASOS[el.paso];
+  const rels = relVivas().filter(r=>r.origen===el.id||r.destino===el.id);
+  const nom = id => (S.elementos.get(id)||{}).titulo || 'elemento eliminado';
+  return `
+    <h4>Detalle del elemento</h4>
+    <div class="detalle-campo">
+      <label for="d-titulo">Título · una palabra o frase corta</label>
+      <input id="d-titulo" value="${esc(el.titulo)}" placeholder="Ej. Portal web">
+    </div>
+    <div class="detalle-campo">
+      <label for="d-bloque">Bloque</label>
+      <select id="d-bloque">${BLOQUES.map(b=>`<option value="${b.id}" ${b.id===el.bloque?'selected':''}>${esc(b.n)}</option>`).join('')}</select>
+    </div>
+    ${cfg.tipos.length>1?`<div class="detalle-campo"><label for="d-tipo">Tipo de aporte</label>
+      <select id="d-tipo">${cfg.tipos.map(t=>`<option value="${t[0]}" ${t[0]===el.tipo?'selected':''}>${esc(t[1])}</option>`).join('')}</select></div>`:''}
+    <div class="detalle-campo">
+      <label for="d-desc">Descripción · el argumento completo</label>
+      <textarea id="d-desc" placeholder="Amplía el elemento: qué es, para quién, por qué es clave…">${esc(el.descripcion)}</textarea>
+    </div>
+    <p class="micro" style="margin:-4px 0 14px">Aportado por ${esc(el.autor||'anónimo')}${el.rol?' · '+esc(el.rol):''} · ${esc(fecha(el.creado))}</p>
+
+    ${(el.paso==='visualizar' && S.paso!=='visualizar')?`
+      <div class="guia-paso" style="margin-bottom:16px"><b>${esc(PASOS[S.paso].rotulo)}</b>
+        Este elemento se describió en Visualizar. Puedes anclarle un aporte del paso actual.
+        <div class="fila-btn" style="margin-top:8px"><button class="btn btn-linea" id="d-aportar">${esc(PASOS[S.paso].verbo)}</button></div>
+      </div>`:''}
+    <h5>Relaciones (${rels.length})</h5>
+    <ul class="lista-rel">
+      ${rels.length? rels.map(r=>`<li>
+          <div class="flecha">${esc(nom(r.origen))} → ${esc(nom(r.destino))}</div>
+          <div class="arg">${esc(r.argumento||'Sin argumento registrado.')}</div>
+          <button class="btn-txt" data-quitar-rel="${r.id}" style="font-size:11px">Quitar</button>
+        </li>`).join('')
+        : `<li style="border-style:dashed;color:var(--gris)">Las relaciones explican la lógica y la causalidad del modelo. Crea la primera.</li>`}
+    </ul>
+    <div class="fila-btn" style="margin-bottom:16px"><button class="btn btn-linea" id="d-enlazar">Crear relación</button></div>
+
+    <h5>Archivos de apoyo</h5>
+    ${(el.adjuntos||[]).map((a,i)=>`<div class="adjunto">
+        <span class="nom">${esc(a.nombre)}</span>
+        <a href="${a.datos}" download="${esc(a.nombre)}">Abrir</a>
+        <button class="quitar" data-quitar-adj="${i}" title="Quitar archivo">×</button>
+      </div>`).join('') || '<p style="font-size:11.5px;color:var(--gris-claro)">Sin archivos. Adjunta la evidencia que respalda este elemento.</p>'}
+    <div class="fila-btn" style="margin:8px 0 20px">
+      <input type="file" id="d-archivo" style="display:none">
+      <button class="btn btn-linea" id="d-adjuntar">Adjuntar archivo</button>
+      <span class="micro">Máx. 800 KB</span>
+    </div>
+
+    <div class="fila-btn" style="border-top:1px solid var(--linea); padding-top:14px">
+      <button class="btn-txt" data-borrar="${el.id}" style="color:var(--gris)">Eliminar elemento</button>
+    </div>`;
+}
+
+function listaRecientes(){
+  const items = [...vivos().map(e=>({t:'el',o:e,c:e.creado})), ...[...S.mensajes.values()].map(m=>({t:'m',o:m,c:m.creado}))]
+    .sort((a,b)=>(b.c||'').localeCompare(a.c||'')).slice(0,8);
+  if(!items.length) return '<p style="font-size:11.5px;color:var(--gris-claro)">Todavía no hay aportes. El tablero se llena entre todos.</p>';
+  return items.map(i=> i.t==='el'
+    ? `<div class="msg"><div class="msg-cab"><span class="avatar" style="width:18px;height:18px;font-size:8px;background:${esc(i.o.color||'#666')}">${esc(iniciales(i.o.autor))}</span>
+         <span class="quien">${esc(i.o.autor||'anónimo')}</span><span class="msg-tag">${esc(i.o.paso)}</span><span class="cuando">${esc(hora(i.c))}</span></div>
+         <div class="msg-txt">${esc(i.o.titulo||'(sin título)')} · <span style="color:var(--gris)">${esc(NOMBRE_BLOQUE[i.o.bloque]||'')}</span></div></div>`
+    : `<div class="msg"><div class="msg-cab"><span class="avatar" style="width:18px;height:18px;font-size:8px;background:${esc(i.o.color||'#666')}">${esc(iniciales(i.o.autor))}</span>
+         <span class="quien">${esc(i.o.autor||'anónimo')}</span><span class="msg-tag">${i.o.tipo==='blog'?esc(NOMBRE_BLOQUE[i.o.bloque]||'blog'):'chat'}</span><span class="cuando">${esc(hora(i.c))}</span></div>
+         <div class="msg-txt">${esc(i.o.texto)}</div></div>`).join('');
+}
+
+function vistaMensajes(tipo){
+  const ms = [...S.mensajes.values()].filter(m=>m.tipo===tipo).sort((a,b)=>(a.creado||'').localeCompare(b.creado||''));
+  const intro = tipo==='chat'
+    ? '<div class="guia-paso"><b>Chat de la sala</b>Para acordar sobre la marcha: dudas, turnos, decisiones rápidas.</div>'
+    : '<div class="guia-paso"><b>Blog por bloques</b>Discusión con memoria, organizada igual que el tablero: quien no pudo estar en la sesión entra después, lee y responde.</div>';
+  if(!ms.length) return intro + '<p style="font-size:11.5px;color:var(--gris-claro)">Nada publicado aún. Abre la conversación.</p>';
+  if(tipo==='chat') return intro + ms.map(m=>msgHTML(m)).join('');
+  const porBloque = BLOQUES.map(b=>{
+    const del = ms.filter(m=>m.bloque===b.id);
+    if(!del.length) return '';
+    return `<h5>${esc(b.n)}</h5>` + del.map(m=>msgHTML(m)).join('');
+  }).join('');
+  const sinBloque = ms.filter(m=>!m.bloque || !NOMBRE_BLOQUE[m.bloque]);
+  return intro + porBloque + (sinBloque.length? '<h5>General</h5>'+sinBloque.map(m=>msgHTML(m)).join('') : '');
+}
+function msgHTML(m){
+  return `<div class="msg"><div class="msg-cab">
+      <span class="avatar" style="width:18px;height:18px;font-size:8px;background:${esc(m.color||'#666')}">${esc(iniciales(m.autor))}</span>
+      <span class="quien">${esc(m.autor||'anónimo')}</span>${m.rol?`<span class="micro">${esc(m.rol)}</span>`:''}
+      <span class="cuando">${esc(hora(m.creado))}</span></div>
+    <div class="msg-txt">${esc(m.texto)}</div></div>`;
+}
+
+function vistaGuia(){
+  const cfg = PASOS[S.paso];
+  const g = GUIA[S.paso];
+  return `<div class="guia-paso"><b>${esc(cfg.rotulo)}</b>Objetivo del paso: ${esc(cfg.objetivo)}</div>` +
+    BLOQUES.map(b=>`<h5>${esc(b.n)}</h5><ul class="guia-q">${(g[b.id]||[]).map(q=>`<li>${esc(q)}</li>`).join('')}</ul>`).join('') +
+    `<p class="nota" style="margin-top:18px">Preguntas guía adaptadas de los cuadros 1, 2 y 3 de Márquez García (2010), <i>Innovación en modelos de negocio: la metodología de Osterwalder en la práctica</i>, Revista MBA EAFIT.</p>`;
+}
+
+function vistaDatos(){
+  const porPersona = {};
+  vivos().forEach(e=>{ const k=e.autor||'anónimo'; porPersona[k]=(porPersona[k]||0)+1; });
+  [...S.mensajes.values()].forEach(m=>{ const k=m.autor||'anónimo'; porPersona[k]=(porPersona[k]||0)+1; });
+  const filas = Object.entries(porPersona).sort((a,b)=>b[1]-a[1]);
+  return `
+    <h4>Sala</h4>
+    <div class="dato"><span>Código</span><b>${esc(S.sala)}</b></div>
+    <div class="dato"><span>Equipo</span><b>${esc(S.equipo||'—')}</b></div>
+    <div class="dato"><span>Modelo</span><b>${esc(S.modelo||'Sin título')}</b></div>
+    <div class="dato"><span>Sincronización</span><b>${S.online?'En vivo (Supabase)':'Local en este navegador'}</b></div>
+    <div class="dato"><span>Entregado al profesor</span><b>${S.entregado?esc(fecha(S.entregadoEn)):'No'}</b></div>
+
+    <h5>Aportes por persona</h5>
+    ${filas.length? filas.map(f=>`<div class="dato"><span>${esc(f[0])}</span><b>${f[1]}</b></div>`).join('') : '<p style="font-size:11.5px;color:var(--gris-claro)">Sin registros todavía.</p>'}
+
+    <h5>Contenido</h5>
+    ${['visualizar','evaluar','innovar'].map(p=>`<div class="dato"><span>${p}</span><b>${vivos().filter(e=>e.paso===p).length}</b></div>`).join('')}
+    <div class="dato"><span>Relaciones</span><b>${relVivas().length}</b></div>
+    <div class="dato"><span>Mensajes de chat</span><b>${[...S.mensajes.values()].filter(m=>m.tipo==='chat').length}</b></div>
+    <div class="dato"><span>Entradas de blog</span><b>${[...S.mensajes.values()].filter(m=>m.tipo==='blog').length}</b></div>
+
+    <h5>Repositorio</h5>
+    <div class="fila-btn" style="flex-direction:column;align-items:stretch;gap:8px">
+      <button class="btn btn-linea" id="x-json">Descargar modelo (JSON)</button>
+      <button class="btn btn-linea" id="x-copiar">Copiar modelo al portapapeles</button>
+      <button class="btn btn-linea" id="x-importar">Importar modelo (JSON)</button>
+      <button class="btn btn-linea" id="x-duplicar">Duplicar como nueva variante</button>
+      <button class="btn btn-linea" id="x-sql">Ver SQL de las tablas</button>
+      <button class="btn btn-linea" id="x-imprimir">Imprimir el tablero</button>
+    </div>
+    <p class="nota">Guardar variantes del modelo permite usar diseños anteriores como base de nuevos modelos, tal como el repositorio descrito para el aplicativo SIMON.</p>`;
+}
+
+/* ---------- 8. Conexiones de la vista de detalle ---------- */
+function conectarDetalle(){
+  const el = S.seleccion ? S.elementos.get(S.seleccion) : null;
+  if(!el) return;
+  const t=$('#d-titulo'), d=$('#d-desc'), b=$('#d-bloque'), tp=$('#d-tipo');
+  let temp;
+  const aplicar = ()=>{ el.titulo=t.value.trim(); el.descripcion=d.value; guardarElemento(el); };
+  const diferido = ()=>{ clearTimeout(temp); temp=setTimeout(aplicar,450); };
+  t.addEventListener('input',diferido); d.addEventListener('input',diferido);
+  t.addEventListener('blur',aplicar);  d.addEventListener('blur',aplicar);
+  t.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); aplicar(); } });
+  b.addEventListener('change',()=>{ el.bloque=b.value; guardarElemento(el); });
+  if(tp) tp.addEventListener('change',()=>{ el.tipo=tp.value; guardarElemento(el); });
+
+  $('#d-enlazar').addEventListener('click',()=>iniciarEnlace(el.id));
+  const aportar = $('#d-aportar');
+  if(aportar) aportar.addEventListener('click',()=>nuevoElemento(el.bloque, el.id));
+  $('#d-adjuntar').addEventListener('click',()=>$('#d-archivo').click());
+  $('#d-archivo').addEventListener('change',ev=>{
+    const f = ev.target.files[0]; if(!f) return;
+    if(f.size > 800*1024){ toast('El archivo supera 800 KB. Sube una versión más liviana o comparte el enlace en el blog.'); return; }
+    const fr = new FileReader();
+    fr.onload = ()=>{ el.adjuntos = (el.adjuntos||[]).concat([{nombre:f.name, tipo:f.type, peso:f.size, datos:fr.result}]);
+                      guardarElemento(el); toast('Archivo adjunto.'); };
+    fr.readAsDataURL(f);
+  });
+  $$('[data-quitar-adj]').forEach(btn=>btn.addEventListener('click',()=>{
+    el.adjuntos.splice(+btn.dataset.quitarAdj,1); guardarElemento(el);
+  }));
+  $$('[data-quitar-rel]').forEach(btn=>btn.addEventListener('click',()=>{
+    const r = S.relaciones.get(btn.dataset.quitarRel); if(!r) return;
+    r.borrado = true; guardarRelacion(r);
+  }));
+  $$('[data-borrar]').forEach(btn=>btn.addEventListener('click',()=>borrarElemento(btn.dataset.borrar)));
+}
+
+/* ---------- 9. Compositor de chat y blog ---------- */
+$('#c-bloque').innerHTML = BLOQUES.map(b=>`<option value="${b.id}">${esc(b.n)}</option>`).join('');
+function publicar(){
+  const txt = $('#c-texto').value.trim(); if(!txt) return;
+  const m = {id:uid(), sala:S.sala, tipo:S.panel==='blog'?'blog':'chat',
+             bloque:S.panel==='blog'?$('#c-bloque').value:null, paso:S.paso, texto:txt,
+             autor:S.yo.nombre, rol:S.yo.rol, color:S.yo.color, creado:ahora()};
+  guardarMensaje(m); $('#c-texto').value='';
+  const cuerpo=$('#lat-cuerpo'); cuerpo.scrollTop = cuerpo.scrollHeight;
+}
+$('#c-enviar').addEventListener('click',publicar);
+$('#c-texto').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) publicar(); });
+
+/* ---------- 10. Pestañas ---------- */
+$('#tabs-paso').addEventListener('click',e=>{
+  const b=e.target.closest('[data-paso]'); if(!b) return;
+  S.paso=b.dataset.paso; S.seleccion=null;
+  $$('#tabs-paso .tab').forEach(x=>x.classList.toggle('on',x===b));
+  $('#i-paso').textContent = PASOS[S.paso].rotulo;
+  $('#i-texto').textContent = PASOS[S.paso].texto;
+  pintarTodo();
+});
+$('#tabs-rel').addEventListener('click',e=>{
+  const b=e.target.closest('[data-rel]'); if(!b) return;
+  S.modoRel=b.dataset.rel;
+  $$('#tabs-rel .tab').forEach(x=>x.classList.toggle('on',x===b));
+  pintarLineas();
+});
+$('#lat-tabs').addEventListener('click',e=>{
+  const b=e.target.closest('[data-p]'); if(!b) return;
+  S.panel=b.dataset.p;
+  $$('#lat-tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  pintarPanel();
+});
+$('#t-modelo').addEventListener('input',()=>{ S.modelo=$('#t-modelo').value; });
+$('#t-modelo').addEventListener('blur',()=>{ guardarSala(); });
+
+/* Resalte de relaciones al pasar el puntero */
+document.addEventListener('mouseover',e=>{
+  if(S.modoRel!=='hover') return;
+  const c=e.target.closest('[data-el]');
+  $$('#lineas line').forEach(l=>l.classList.remove('ver','resalta'));
+  $$('#lineas circle').forEach(l=>l.classList.remove('ver'));
+  if(!c) return;
+  relVivas().filter(r=>r.origen===c.dataset.el||r.destino===c.dataset.el).forEach(r=>{
+    $$(`#lineas [data-r="${r.id}"]`).forEach(n=>{ n.classList.add('ver'); if(n.tagName==='line') n.classList.add('resalta'); });
+  });
+});
+
+/* ---------- 11. Modal ---------- */
+function abrirModal(titulo, html){ $('#m-titulo').textContent=titulo; $('#m-cuerpo').innerHTML=html; $('#velo').classList.add('on'); }
+function cerrarModal(){ $('#velo').classList.remove('on'); }
+$('#m-cerrar').addEventListener('click',cerrarModal);
+$('#velo').addEventListener('click',e=>{ if(e.target===$('#velo')) cerrarModal(); });
+function modalSQL(){
+  abrirModal('SQL de las tablas', `<p style="font-size:12.5px;color:var(--gris)">Crea un proyecto en supabase.com, abre <b>SQL Editor</b>, pega esto y ejecútalo. Después copia el <b>Project URL</b> y la <b>anon public key</b> en la pantalla de entrada.</p>
+    <pre id="sql-txt">${esc(SQL)}</pre>
+    <div class="fila-btn"><button class="btn" id="sql-copiar">Copiar SQL</button></div>`);
+  $('#sql-copiar').addEventListener('click',()=>{ copiar(SQL); toast('SQL copiado.'); });
+}
+async function copiar(txt){
+  try{ await navigator.clipboard.writeText(txt); }
+  catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+}
+function descargar(nombre, contenido, mime){
+  const b=new Blob([contenido],{type:mime||'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=nombre;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+
+/* ---------- 12. Repositorio: exportar, importar, duplicar ---------- */
+function instantanea(){
+  return {
+    app:'INNOVA-CANVAS', version:1, exportado:ahora(),
+    sala:S.sala, equipo:S.equipo, modelo:S.modelo,
+    entregado:S.entregado, entregado_en:S.entregadoEn,
+    elementos:vivos(), relaciones:relVivas(), mensajes:[...S.mensajes.values()]
+  };
+}
+function nombreArchivo(ext){
+  const base = (S.modelo||'modelo').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  return `innova-canvas_${S.sala||'sala'}_${base||'modelo'}.${ext}`;
+}
+function informeHTML(){
+  const bloque = (b,paso)=> deBloque(b,paso).map(e=>
+    `<li><b>${esc(e.titulo||'(sin título)')}</b>${e.paso!=='visualizar'?` <i>[${esc(e.tipo)}]</i>`:''}${e.descripcion?`<div class="d">${esc(e.descripcion)}</div>`:''}<div class="a">${esc(e.autor||'')}</div></li>`).join('') || '<li class="v">—</li>';
+  const tabla = paso => `<table><tbody>${BLOQUES.map(b=>`<tr><th>${esc(b.n)}</th><td><ul>${bloque(b.id,paso)}</ul></td></tr>`).join('')}</tbody></table>`;
+  const nom = id => (S.elementos.get(id)||{}).titulo||'—';
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(S.modelo||'Modelo de negocio')} · Innova-Canvas</title>
+  <style>body{font:14px/1.5 Georgia,serif;max-width:900px;margin:40px auto;padding:0 24px;color:#141312}
+  h1{font-family:Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.02em;font-size:34px;margin:0 0 4px}
+  h2{font-family:Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin:34px 0 10px;color:#dd3125;border-bottom:1px solid #dbd7cf;padding-bottom:6px}
+  .meta{color:#6e6a63;font-size:12px;font-family:Helvetica,Arial,sans-serif}
+  table{width:100%;border-collapse:collapse}th{width:170px;text-align:left;vertical-align:top;font:600 11px/1.4 Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:9px 10px 9px 0;border-top:1px solid #dbd7cf}
+  td{border-top:1px solid #dbd7cf;padding:9px 0}ul{margin:0;padding-left:18px}li{margin-bottom:6px}
+  .d{color:#3d3a35;font-size:13px}.a{font:11px Helvetica,Arial,sans-serif;color:#9b968d}.v{list-style:none;margin-left:-18px;color:#b9b4ab}
+  </style></head><body>
+  <p class="meta">Cocreación de modelos de negocio · nueve bloques de Osterwalder</p>
+  <h1>${esc(S.modelo||'Modelo de negocio sin título')}</h1>
+  <p class="meta">Sala ${esc(S.sala)} · ${esc(S.equipo||'sin equipo')} · ${esc(fecha(ahora()))}</p>
+  <h2>1. Visualizar</h2>${tabla('visualizar')}
+  <h2>2. Evaluar</h2>${tabla('evaluar')}
+  <h2>3. Innovar</h2>${tabla('innovar')}
+  <h2>Relaciones entre elementos</h2>
+  <ul>${relVivas().map(r=>`<li><b>${esc(nom(r.origen))} → ${esc(nom(r.destino))}</b><div class="d">${esc(r.argumento||'')}</div></li>`).join('')||'<li class="v">—</li>'}</ul>
+  <h2>Blog del equipo</h2>
+  <ul>${[...S.mensajes.values()].filter(m=>m.tipo==='blog').map(m=>`<li><b>${esc(NOMBRE_BLOQUE[m.bloque]||'General')}</b> · ${esc(m.autor||'')}<div class="d">${esc(m.texto)}</div></li>`).join('')||'<li class="v">—</li>'}</ul>
+  </body></html>`;
+}
+function importarJSON(){
+  const i=document.createElement('input'); i.type='file'; i.accept='.json,application/json';
+  i.onchange=()=>{ const f=i.files[0]; if(!f) return;
+    const fr=new FileReader();
+    fr.onload=()=>{ try{
+        const d=JSON.parse(fr.result);
+        (d.elementos||[]).forEach(e=>{ e.sala=S.sala; S.elementos.set(e.id,e); subir('ic_elementos',e); });
+        (d.relaciones||[]).forEach(r=>{ r.sala=S.sala; S.relaciones.set(r.id,r); subir('ic_relaciones',r); });
+        (d.mensajes||[]).forEach(m=>{ m.sala=S.sala; S.mensajes.set(m.id,m); subir('ic_mensajes',m); });
+        if(d.modelo && !S.modelo){ S.modelo=d.modelo; $('#t-modelo').value=S.modelo; guardarSala(); }
+        pintarTodo(); toast('Modelo importado a esta sala.');
+      }catch(err){ toast('El archivo no tiene el formato de Innova-Canvas.'); } };
+    fr.readAsText(f); };
+  i.click();
+}
+function duplicarVariante(){
+  const nueva = prompt('Código de la nueva sala (la variante se copia allí):', S.sala+'-V2');
+  if(!nueva) return;
+  const d = instantanea();
+  const mapa = new Map();
+  d.elementos.forEach(e=>{ const n=uid(); mapa.set(e.id,n); });
+  const copia = {...d, sala:nueva.trim().toUpperCase(), entregado:false, entregado_en:null,
+    elementos:d.elementos.map(e=>({...e,id:mapa.get(e.id),sala:nueva})),
+    relaciones:d.relaciones.map(r=>({...r,id:uid(),sala:nueva,origen:mapa.get(r.origen),destino:mapa.get(r.destino)})),
+    mensajes:[]};
+  Local.set('innova-canvas:sala:'+copia.sala, {sala:copia.sala,equipo:S.equipo,modelo:S.modelo+' (variante)',elementos:copia.elementos,relaciones:copia.relaciones,mensajes:[]});
+  descargar(`innova-canvas_${copia.sala}.json`, JSON.stringify(copia,null,2));
+  toast('Variante creada en la sala '+copia.sala+'. Ábrela con ese código.');
+}
+
+/* Delegación de los botones de la pestaña Datos */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b||!b.id) return;
+  if(b.id==='x-json')      descargar(nombreArchivo('json'), JSON.stringify(instantanea(),null,2));
+  else if(b.id==='x-copiar'){ copiar(JSON.stringify(instantanea(),null,2)); toast('Modelo copiado.'); }
+  else if(b.id==='x-importar') importarJSON();
+  else if(b.id==='x-duplicar') duplicarVariante();
+  else if(b.id==='x-sql')      modalSQL();
+  else if(b.id==='x-imprimir') window.print();
+});
+
+/* ---------- 13. Guardar y compartir con el profesor ---------- */
+function enlaceCompartir(){
+  const u = new URL(location.href.split('#')[0].split('?')[0]);
+  u.searchParams.set('sala', S.sala);
+  if(S.equipo) u.searchParams.set('equipo', S.equipo);
+  if(S.cred.url && S.cred.key){
+    try{ u.searchParams.set('sb', btoa(S.cred.url+'|'+S.cred.key)); }catch(e){}
+  }
+  return u.toString();
+}
+function revision(){
+  const faltan = [];
+  BLOQUES.forEach(b=>{ if(!deBloque(b.id,'visualizar').length) faltan.push(b.n); });
+  return {
+    bloquesVacios:faltan,
+    relaciones:relVivas().length,
+    evaluaciones:vivos().filter(e=>e.paso==='evaluar').length,
+    ideas:vivos().filter(e=>e.paso==='innovar').length,
+    conNombre:!!(S.modelo||'').trim(),
+    autores:new Set(vivos().map(e=>e.autor).filter(Boolean)).size
+  };
+}
+function modalGuardar(){
+  const r = revision();
+  const linea = (ok,txt)=>`<div class="check"><span class="marca ${ok?'ok':'falta'}">${ok?'✓':'○'}</span><span>${txt}</span></div>`;
+  abrirModal('Guardar y compartir', `
+    <p style="font-size:13px;color:var(--gris);margin-top:0">Antes de entregar, revisen el estado del tablero. Nada se bloquea: pueden seguir editando después de compartir.</p>
+    ${linea(r.conNombre,'El modelo tiene nombre')}
+    ${linea(!r.bloquesVacios.length, r.bloquesVacios.length? 'Bloques sin elementos: <b>'+esc(r.bloquesVacios.join(', '))+'</b>' : 'Los nueve bloques están descritos')}
+    ${linea(r.relaciones>0, r.relaciones+' relación(es) argumentada(s) entre elementos')}
+    ${linea(r.evaluaciones>0, r.evaluaciones+' fortaleza(s) y debilidad(es) en Evaluar')}
+    ${linea(r.ideas>0, r.ideas+' idea(s) o reto(s) en Innovar')}
+    ${linea(r.autores>1, r.autores+' persona(s) han aportado')}
+
+    <div class="detalle-campo" style="margin-top:20px"><label for="g-para">Para (profesor o curso)</label>
+      <input id="g-para" placeholder="Ej. Prof. Márquez · Innovación en modelos de negocio"></div>
+    <div class="detalle-campo"><label for="g-nota">Nota de entrega</label>
+      <textarea id="g-nota" placeholder="Qué decidieron, qué quedó pendiente, qué quieren que revise…"></textarea></div>
+
+    <div class="fila-btn">
+      <button class="btn btn-rojo" id="g-entregar">Entregar el canvas</button>
+      <button class="btn btn-linea" id="g-informe">Descargar informe</button>
+      <button class="btn btn-linea" id="g-json">Descargar datos</button>
+      <button class="btn-txt" id="g-enlace">Copiar enlace de la sala</button>
+    </div>
+    <p class="nota" id="g-estado">${S.entregado? 'Ya entregado el '+esc(fecha(S.entregadoEn))+'. Volver a entregar actualiza la fecha.' : 'La entrega marca la sala como lista y deja constancia de la fecha y de quién entregó.'}</p>`);
+
+  $('#g-entregar').addEventListener('click',()=>{
+    S.entregado = true; S.entregadoEn = ahora();
+    guardarSala({entregado:true, entregado_en:S.entregadoEn, entregado_por:S.yo.nombre, nota_profesor:$('#g-nota').value.trim()});
+    const para = $('#g-para').value.trim();
+    $('#g-estado').innerHTML = 'Entregado el '+esc(fecha(S.entregadoEn))+(para? ' a '+esc(para):'')+'. Comparte el enlace de la sala o el informe descargado.';
+    toast('Canvas entregado.');
+    pintarTodo();
+  });
+  $('#g-informe').addEventListener('click',()=>descargar(nombreArchivo('html'), informeHTML(),'text/html'));
+  $('#g-json').addEventListener('click',()=>descargar(nombreArchivo('json'), JSON.stringify(instantanea(),null,2)));
+  $('#g-enlace').addEventListener('click',()=>{ copiar(enlaceCompartir()); toast('Enlace copiado.'); });
+}
+$('#btn-guardar').addEventListener('click',modalGuardar);
+
+/* ---------- 14. Arranque ---------- */
+const CRED_KEY='innova-canvas:cred', PERFIL_KEY='innova-canvas:perfil';
+
+function pintarEstadoCred(){
+  const t=$('#estado-cred');
+  if(S.cred.url && S.cred.key) t.innerHTML = 'Credenciales guardadas: al entrar, la sala se sincroniza en vivo entre todos los computadores.';
+  else t.textContent = 'Sin conexión en vivo: la sala trabaja en este navegador y guarda localmente.';
+}
+(function precargar(){
+  const c = Local.get(CRED_KEY); if(c){ S.cred=c; $('#f-url').value=c.url||''; $('#f-key').value=c.key||''; }
+  const p = Local.get(PERFIL_KEY); if(p){ $('#f-nombre').value=p.nombre||''; $('#f-rol').value=p.rol||''; }
+  const q = new URLSearchParams(location.search);
+  if(q.get('sala'))   $('#f-sala').value   = q.get('sala');
+  if(q.get('equipo')) $('#f-equipo').value = q.get('equipo');
+  if(q.get('sb')){
+    try{ const [u,k]=atob(q.get('sb')).split('|'); if(u&&k){ S.cred={url:u,key:k}; $('#f-url').value=u; $('#f-key').value=k; } }catch(e){}
+  }
+  pintarEstadoCred();
+})();
+
+$('#btn-cred').addEventListener('click',()=>{
+  S.cred = {url:$('#f-url').value.trim().replace(/\/$/,''), key:$('#f-key').value.trim()};
+  Local.set(CRED_KEY,S.cred); pintarEstadoCred();
+  toast(S.cred.url&&S.cred.key? 'Credenciales guardadas.' : 'Credenciales borradas: la sala trabajará localmente.');
+});
+$('#btn-sql-1').addEventListener('click',modalSQL);
+
+async function entrar(){
+  const nombre = $('#f-nombre').value.trim();
+  const sala   = $('#f-sala').value.trim().toUpperCase();
+  if(!nombre){ $('#f-nombre').focus(); toast('Escribe tu nombre real: el tablero registra quién aporta cada cosa.'); return; }
+  if(!sala){ $('#f-sala').focus(); toast('Falta el código de la sala del equipo.'); return; }
+
+  S.yo.nombre = nombre;
+  S.yo.rol    = $('#f-rol').value.trim();
+  S.yo.color  = colorDe(nombre);
+  S.sala   = sala;
+  S.equipo = $('#f-equipo').value.trim();
+  S.modelo = $('#f-modelo').value.trim();
+  S.cred   = {url:$('#f-url').value.trim().replace(/\/$/,''), key:$('#f-key').value.trim()};
+  Local.set(PERFIL_KEY,{nombre:S.yo.nombre, rol:S.yo.rol});
+  Local.set(CRED_KEY,S.cred);
+
+  cargarLocal();
+  $('#entrada').style.display='none';
+  $('#app').classList.add('on');
+  $('#t-sala').textContent = S.sala;
+  $('#t-modelo').value = S.modelo;
+  $('#i-paso').textContent = PASOS.visualizar.rotulo;
+  $('#i-texto').textContent = PASOS.visualizar.texto;
+
+  construirGrilla();
+  abrirCanalLocal();
+  emitirLocal('hola', S.yo);
+  pintarTodo();
+  guardarSala();
+
+  const ok = await conectar();
+  if(!ok && !(S.cred.url&&S.cred.key)) marcarEstado('Local','');
+  pintarTodo();
+}
+$('#btn-entrar').addEventListener('click',entrar);
+$$('#entrada input').forEach(i=>i.addEventListener('keydown',e=>{ if(e.key==='Enter') entrar(); }));
+
+window.addEventListener('beforeunload',()=>{ guardarLocal(); try{ S.canal && S.canal.untrack(); }catch(e){} });
+</script>
+</body>
+</html>
